@@ -1,0 +1,196 @@
+﻿document.addEventListener('DOMContentLoaded', () => {
+    // NAV TOGGLE
+    const navToggle = document.querySelector('.nav-toggle');
+    const siteNav = document.querySelector('.site-nav');
+    if (navToggle) {
+        navToggle.addEventListener('click', () => {
+            siteNav.classList.toggle('open');
+            navToggle.classList.toggle('open');
+        });
+    }
+
+    // HERO SLIDER
+    let activeIndex = 0;
+    const sliderDots = document.querySelectorAll('.slider-dot');
+    const slides = document.querySelectorAll('.hero-slide');
+
+    function setActiveSlide(index) {
+        slides.forEach((slide, idx) => {
+            const copy = slide.querySelector('.hero-copy');
+            const isActive = idx === index;
+            slide.classList.toggle('active', isActive);
+
+            if (copy) {
+                copy.classList.remove('animate');
+                if (isActive) {
+                    void copy.offsetWidth;
+                    copy.classList.add('animate');
+                }
+            }
+        });
+        sliderDots.forEach((dot, idx) => dot.classList.toggle('active', idx === index));
+        activeIndex = index;
+    }
+
+    sliderDots.forEach(dot => dot.addEventListener('click', () => setActiveSlide(Number(dot.dataset.index))));
+    setActiveSlide(0);
+    setInterval(() => setActiveSlide((activeIndex + 1) % slides.length), 6000);
+
+    // LIVE CURRENCY CONVERTER
+    const fromAmount = document.getElementById('from-amount');
+    const fromCurrency = document.getElementById('from-currency');
+    const toCurrency = document.getElementById('to-currency');
+    const toAmount = document.getElementById('to-amount');
+    const swapBtn = document.getElementById('swap-btn');
+    const exchangeRates = {};
+
+    async function fetchRate(base, target) {
+        try {
+            const key = base + target;
+            if (exchangeRates[key]) return exchangeRates[key];
+            const resp = await fetch('https://api.exchangerate.host/latest?base=' + base + '&symbols=' + target);
+            if (!resp.ok) throw new Error('Network');
+            const json = await resp.json();
+            const rate = json.rates?.[target];
+            if (rate) exchangeRates[key] = rate;
+            return rate || null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async function convertCurrency() {
+        const amount = parseFloat(fromAmount.value) || 0;
+        const from = fromCurrency.value;
+        const to = toCurrency.value;
+        if (from === to) { toAmount.textContent = amount.toFixed(2); return; }
+        const rate = await fetchRate(from, to);
+        if (rate) {
+            const result = (amount * rate).toFixed(4).replace(/\.?0+$/, '');
+            toAmount.textContent = result || '0';
+        } else {
+            toAmount.textContent = '—';
+        }
+    }
+
+    fromAmount.addEventListener('input', convertCurrency);
+    fromCurrency.addEventListener('change', convertCurrency);
+    toCurrency.addEventListener('change', convertCurrency);
+
+    swapBtn.addEventListener('click', () => {
+        const temp = fromCurrency.value;
+        fromCurrency.value = toCurrency.value;
+        toCurrency.value = temp;
+        convertCurrency();
+    });
+
+    convertCurrency();
+
+    // LIVE MARKET PRICES
+    const marketCards = document.querySelectorAll('.market-card');
+    const lastPrices = {};
+
+    async function updateMarketPrices() {
+        for (const card of marketCards) {
+            const pair = card.dataset.pair;
+            const [base, target] = pair.split('/');
+            const strong = card.querySelector('strong');
+            const changeEl = card.querySelector('.change');
+            const prev = lastPrices[pair];
+            const rate = await fetchRate(base, target);
+            if (rate === null) {
+                card.classList.add('stale');
+                continue;
+            }
+            lastPrices[pair] = rate;
+            strong.textContent = formatRate(rate, pair);
+            if (prev) {
+                const delta = (rate - prev) / prev * 100;
+                changeEl.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(2) + '%';
+                changeEl.classList.toggle('positive', delta >= 0);
+                changeEl.classList.toggle('negative', delta < 0);
+            }
+            card.classList.remove('stale');
+        }
+    }
+
+    function formatRate(rate, pair) {
+        if (!rate) return '—';
+        if (pair.endsWith('/JPY')) return rate.toFixed(2);
+        if (rate >= 100) return rate.toFixed(2);
+        return rate.toFixed(4);
+    }
+
+    if (marketCards.length) {
+        updateMarketPrices();
+        setInterval(updateMarketPrices, 5000);
+    }
+
+    // MARKET CAROUSEL
+    const marketGrid = document.querySelector('.market-grid');
+    const carouselPrev = document.querySelector('.carousel-prev');
+    const carouselNext = document.querySelector('.carousel-next');
+    let autoScrollId = null;
+
+    function startAutoScroll() {
+        if (!marketGrid) return;
+        let direction = 1;
+        autoScrollId = setInterval(() => {
+            marketGrid.scrollBy({ left: 300 * direction, behavior: 'smooth' });
+            if (marketGrid.scrollLeft + marketGrid.clientWidth >= marketGrid.scrollWidth - 10) direction = -1;
+            if (marketGrid.scrollLeft <= 0) direction = 1;
+        }, 3500);
+    }
+
+    function stopAutoScroll() { if (autoScrollId) { clearInterval(autoScrollId); autoScrollId = null; } }
+
+    if (carouselPrev && carouselNext) {
+        carouselPrev.addEventListener('click', () => { stopAutoScroll(); marketGrid.scrollBy({ left: -320, behavior: 'smooth' }); });
+        carouselNext.addEventListener('click', () => { stopAutoScroll(); marketGrid.scrollBy({ left: 320, behavior: 'smooth' }); });
+        marketGrid.addEventListener('mouseenter', stopAutoScroll);
+        marketGrid.addEventListener('mouseleave', startAutoScroll);
+        startAutoScroll();
+    }
+
+    // CHAT & SENTIMENT
+    const chatContainer = document.getElementById('chat-container');
+    const chatInput = document.getElementById('chat-input');
+
+    const sampleMessages = [
+        { name: 'Trader Pro', avatar: 'TP', text: 'EUR/USD showing strong support at 1.0850. Good buy zone.', type: 'buy', time: '2m ago' },
+        { name: 'Market Analyst', avatar: 'MA', text: 'GBP breaking through 1.27. Watch for resistance at 1.2750.', type: 'neutral', time: '4m ago' },
+        { name: 'Risk Manager', avatar: 'RM', text: 'Yen volatility spike incoming. Reduce USD/JPY positions.', type: 'sell', time: '6m ago' },
+        { name: 'Learner', avatar: 'LS', text: 'Just earned 50 tokens watching the AUD analysis video!', type: 'neutral', time: '8m ago' },
+        { name: 'Chart Master', avatar: 'CM', text: 'Technical breakout confirmed for AUD/USD. Momentum bullish.', type: 'buy', time: '10m ago' },
+    ];
+
+    function renderMessages() {
+        chatContainer.innerHTML = sampleMessages.map(msg => `
+            <div class="chat-message ${msg.type}">
+                <div class="chat-avatar">${msg.avatar}</div>
+                <div class="chat-content">
+                    <div class="chat-name">${msg.name}</div>
+                    <div class="chat-text">${msg.text}</div>
+                    <div class="chat-time">${msg.time}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function sendMessage() {
+        const text = chatInput.value.trim();
+        if (!text) return;
+        const newMsg = { name: 'You', avatar: 'YO', text: text, type: 'neutral', time: 'now' };
+        sampleMessages.unshift(newMsg);
+        if (sampleMessages.length > 10) sampleMessages.pop();
+        renderMessages();
+        chatInput.value = '';
+    }
+
+    window.sendMessage = sendMessage;
+    renderMessages();
+
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
+});
