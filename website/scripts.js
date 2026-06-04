@@ -43,33 +43,71 @@
     const toAmount = document.getElementById('to-amount');
     const swapBtn = document.getElementById('swap-btn');
     const exchangeRates = {};
+    const converterStatus = document.getElementById('converter-status');
+
+    function setConverterStatus(message, isError = false) {
+        if (!converterStatus) return;
+        converterStatus.textContent = message;
+        converterStatus.classList.toggle('error', isError);
+    }
 
     async function fetchRate(base, target) {
-        try {
-            const key = base + target;
-            if (exchangeRates[key]) return exchangeRates[key];
-            const resp = await fetch('https://api.exchangerate.host/latest?base=' + base + '&symbols=' + target);
-            if (!resp.ok) throw new Error('Network');
+        if (base === target) return 1;
+        const key = base + target;
+        if (exchangeRates[key]) return exchangeRates[key];
+
+        async function fetchBaseRates(url) {
+            const resp = await fetch(url);
+            if (!resp.ok) return null;
             const json = await resp.json();
-            const rate = json.rates?.[target];
-            if (rate) exchangeRates[key] = rate;
-            return rate || null;
+            if (json.result === 'success' || json.base) {
+                return json.rates?.[target] ?? null;
+            }
+            return null;
+        }
+
+        try {
+            const primary = await fetchBaseRates('https://open.er-api.com/v6/latest/' + base);
+            if (primary !== null) {
+                exchangeRates[key] = primary;
+                return primary;
+            }
+        } catch (e) {
+            // fallback below
+        }
+
+        try {
+            const fallback = await fetchBaseRates('https://api.exchangerate-api.com/v4/latest/' + base);
+            if (fallback !== null) {
+                exchangeRates[key] = fallback;
+                return fallback;
+            }
         } catch (e) {
             return null;
         }
+
+        return null;
     }
 
     async function convertCurrency() {
         const amount = parseFloat(fromAmount.value) || 0;
         const from = fromCurrency.value;
         const to = toCurrency.value;
-        if (from === to) { toAmount.textContent = amount.toFixed(2); return; }
+        setConverterStatus('Calculating live rate…');
+        if (from === to) {
+            toAmount.textContent = amount.toFixed(2);
+            setConverterStatus('Same currency selected. Amount unchanged.');
+            return;
+        }
+
         const rate = await fetchRate(from, to);
         if (rate) {
             const result = (amount * rate).toFixed(4).replace(/\.?0+$/, '');
             toAmount.textContent = result || '0';
+            setConverterStatus(`Live ${from}/${to} rate applied.`);
         } else {
             toAmount.textContent = '—';
+            setConverterStatus('Unable to retrieve rate. Check your connection or try again.', true);
         }
     }
 
@@ -83,6 +121,11 @@
         toCurrency.value = temp;
         convertCurrency();
     });
+
+    const convertBtn = document.getElementById('convert-btn');
+    if (convertBtn) {
+        convertBtn.addEventListener('click', convertCurrency);
+    }
 
     convertCurrency();
 

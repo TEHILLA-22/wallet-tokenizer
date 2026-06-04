@@ -118,6 +118,20 @@ button { font: inherit; }
 }
 .converter-result-label { color: var(--muted); font-size: 0.9rem; margin-bottom: 4px; }
 .converter-result-value { font-size: 1.8rem; font-weight: 700; }
+.converter-status {
+    grid-column: 1 / -1;
+    color: rgba(244, 244, 244, 0.74);
+    font-size: 0.95rem;
+    margin-top: 6px;
+    text-align: center;
+}
+.converter-status.error { color: var(--danger); }
+.converter-submit { grid-column: 1 / -1; display: flex; justify-content: center; }
+.converter-submit button { min-width: 220px; }
+
+@media (max-width: 980px) {
+    .converter-grid { grid-template-columns: 1fr; }
+}
 
 /* SECTIONS */
 .section { padding: 64px 0; }
