@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.Ozymandias" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">#FF1A1A2E</item>
+        <item name="android:statusBarColor">#FF0F0F1A</item>
+        <item name="android:navigationBarColor">#FF0F0F1A</item>
+    </style>
+</resources>

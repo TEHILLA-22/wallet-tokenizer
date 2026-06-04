@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "com.ozymandias.app-debug-20:/drawable_ic_launcher.xml.flat",
+        "source": "com.ozymandias.app-main-22:/drawable/ic_launcher.xml"
+    },
+    {
+        "merged": "com.ozymandias.app-debug-20:/xml_device_admin_policies.xml.flat",
+        "source": "com.ozymandias.app-main-22:/xml/device_admin_policies.xml"
+    },
+    {
+        "merged": "com.ozymandias.app-debug-20:/layout_activity_main.xml.flat",
+        "source": "com.ozymandias.app-main-22:/layout/activity_main.xml"
+    }
+]
