@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
+﻿﻿document.addEventListener('DOMContentLoaded', () => {
     // NAV TOGGLE
     const navToggle = document.querySelector('.nav-toggle');
     const siteNav = document.querySelector('.site-nav');
@@ -200,11 +200,11 @@
     const chatInput = document.getElementById('chat-input');
 
     const sampleMessages = [
-        { name: 'Trader Pro', avatar: 'TP', text: 'EUR/USD showing strong support at 1.0850. Good buy zone.', type: 'buy', time: '2m ago' },
-        { name: 'Market Analyst', avatar: 'MA', text: 'GBP breaking through 1.27. Watch for resistance at 1.2750.', type: 'neutral', time: '4m ago' },
-        { name: 'Risk Manager', avatar: 'RM', text: 'Yen volatility spike incoming. Reduce USD/JPY positions.', type: 'sell', time: '6m ago' },
-        { name: 'Learner', avatar: 'LS', text: 'Just earned 50 tokens watching the AUD analysis video!', type: 'neutral', time: '8m ago' },
-        { name: 'Chart Master', avatar: 'CM', text: 'Technical breakout confirmed for AUD/USD. Momentum bullish.', type: 'buy', time: '10m ago' },
+        { name: 'James Moragn', avatar: 'JM', text: 'EUR/USD showing strong support at 1.0850. Good buy zone.', type: 'buy', time: '2m ago' },
+        { name: 'Joseph Christopher', avatar: 'JC', text: 'GBP breaking through 1.27. Watch for resistance at 1.2750.', type: 'neutral', time: '4m ago' },
+        { name: 'Emmanuel Henry', avatar: 'EH', text: 'Yen volatility spike incoming. Reduce USD/JPY positions.', type: 'sell', time: '6m ago' },
+        { name: 'Micheal Elliot', avatar: 'ME', text: 'Just earned 50 tokens watching the AUD analysis video!', type: 'neutral', time: '8m ago' },
+        { name: 'Mark uroji', avatar: 'MU', text: 'Technical breakout confirmed for AUD/USD. Momentum bullish.', type: 'buy', time: '10m ago' },
     ];
 
     function renderMessages() {

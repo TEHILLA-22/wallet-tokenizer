@@ -252,3 +252,10 @@ button { font: inherit; }
     .converter-swap { justify-self: auto; order: 3; margin-top: 0; }
     .chat-container { max-height: 300px; }
 }
+
+@media(max-width: 350px) {
+    .chat-input-box {
+        display: flex;
+        flex-direction: column;
+    }
+}
